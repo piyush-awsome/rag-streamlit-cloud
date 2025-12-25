@@ -2,7 +2,8 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain.chains import RetrievalQA
+
+from langchain.chains.retrieval_qa.base import RetrievalQA
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 from langchain_huggingface import HuggingFacePipeline
