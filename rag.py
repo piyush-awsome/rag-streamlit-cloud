@@ -1,12 +1,11 @@
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-
-from langchain.chains.retrieval_qa.base import RetrievalQA
+from langchain.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.llms import HuggingFacePipeline
+from langchain.chains import RetrievalQA
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
-from langchain_huggingface import HuggingFacePipeline
 
 
 def create_rag_chain(pdf_path):
@@ -21,15 +20,15 @@ def create_rag_chain(pdf_path):
     )
     chunks = splitter.split_documents(documents)
 
-    # 3. Create embeddings
+    # 3. Embeddings
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
 
-    # 4. Store vectors
+    # 4. Vector store
     vectorstore = FAISS.from_documents(chunks, embeddings)
 
-    # 5. Load lightweight LLM
+    # 5. LLM (HF, CPU)
     model_name = "google/flan-t5-small"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
@@ -43,7 +42,7 @@ def create_rag_chain(pdf_path):
 
     llm = HuggingFacePipeline(pipeline=pipe)
 
-    # 6. Build RAG chain
+    # 6. RAG chain
     qa_chain = RetrievalQA.from_chain_type(
         llm=llm,
         retriever=vectorstore.as_retriever(search_kwargs={"k": 1}),
